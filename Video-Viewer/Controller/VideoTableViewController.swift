@@ -10,17 +10,30 @@ import UIKit
 class VideoTableViewController: UITableViewController {
     
     private let videoCellID = "VideoCell"
+    private let detailedViewStoryboardID = "DetailedView"
     private let urlString = "https://iphonephotographyschool.com/test-api/videos"
+    
+    private  var thumbImage: [UIImage?] = [UIImage?]()
     
     private var videoSource = [Video]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initialSetUp()
-        getData(for: urlString)
+        if videoSource.isEmpty {
+            getData(for: urlString)
+        }
         
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshTableVIew), for: .valueChanged)
+        self.refreshControl = refreshControl
     }
     
+    @objc func refreshTableVIew() {
+        tableView.reloadData()
+        refreshControl?.endRefreshing()
+    }
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return videoSource.count
     }
@@ -30,13 +43,28 @@ class VideoTableViewController: UITableViewController {
         if let videoCell = tableView.dequeueReusableCell(withIdentifier: videoCellID, for: indexPath) as? VideoTableViewCell {
             let source = videoSource[indexPath.row]
             
-            videoCell.labelText.text = source.name
+
+            if videoCell.imageView?.image != nil {
+                videoCell.spinner.stopAnimating()
+                videoCell.spinner.isHidden = true
+            } else {
+                videoCell.spinner.isHidden = false
+                videoCell.spinner.startAnimating()
+            }
             
-            if let imageURL = URL(string: videoSource[indexPath.row].thumbnail) {
-                if let imgData = try? Data(contentsOf: imageURL) {
-                    videoCell.thumbnailImageView.image = UIImage(data: imgData)?.resizedImage(with: CGSize(width: 80.0, height: 80.0))
+            DispatchQueue.global().async { [weak self] in
+                if let imageURL = URL(string: (self?.videoSource[indexPath.row].thumbnail)!) {
+                    if let imgData = try? Data(contentsOf: imageURL) {
+                        DispatchQueue.main.async {
+                            videoCell.thumbnailImageView.image = UIImage(data: imgData)?.resizedImage(with: CGSize(width: 80.0, height: 80.0))
+                            self?.thumbImage.append(UIImage(data: imgData))
+                        }
+                        
+                    }
                 }
             }
+
+            videoCell.labelText.text = source.name
             videoCell.thumbnailImageView.layer.cornerRadius = 10
             
             cell = videoCell
@@ -77,6 +105,20 @@ class VideoTableViewController: UITableViewController {
         self.tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.title = "Videos"
+        
+    }
+    
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+        guard let vc = storyboard.instantiateViewController(identifier: detailedViewStoryboardID) as? DetailedViewController else { return }
+        vc.txt = videoSource[indexPath.row].name
+        vc.dscr = videoSource[indexPath.row].description
+        vc.img = thumbImage[indexPath.row]
+        vc.videoURL = videoSource[indexPath.row].video_link
+        
+        navigationController?.pushViewController(vc, animated: true)
+        
     }
     
 }

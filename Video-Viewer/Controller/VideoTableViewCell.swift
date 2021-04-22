@@ -10,4 +10,5 @@ import UIKit
 class VideoTableViewCell: UITableViewCell {
     @IBOutlet var thumbnailImageView: UIImageView!
     @IBOutlet var labelText: UILabel!
+    @IBOutlet var spinner: UIActivityIndicatorView!
 }

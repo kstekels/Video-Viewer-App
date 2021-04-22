@@ -16,6 +16,7 @@
 		158915F22631719600EA0889 /* VideoTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158915F12631719600EA0889 /* VideoTableViewController.swift */; };
 		158915F5263171AC00EA0889 /* VideoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158915F4263171AC00EA0889 /* VideoTableViewCell.swift */; };
 		158915FA26317DE100EA0889 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158915F926317DE100EA0889 /* UIImage.swift */; };
+		158916012631B36A00EA0889 /* DetailedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158916002631B36A00EA0889 /* DetailedViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		158915F12631719600EA0889 /* VideoTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTableViewController.swift; sourceTree = "<group>"; };
 		158915F4263171AC00EA0889 /* VideoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTableViewCell.swift; sourceTree = "<group>"; };
 		158915F926317DE100EA0889 /* UIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
+		158916002631B36A00EA0889 /* DetailedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailedViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 			children = (
 				158915F12631719600EA0889 /* VideoTableViewController.swift */,
 				158915F4263171AC00EA0889 /* VideoTableViewCell.swift */,
+				158916002631B36A00EA0889 /* DetailedViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -170,6 +173,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				158916012631B36A00EA0889 /* DetailedViewController.swift in Sources */,
 				158915EE2631710400EA0889 /* Videos.swift in Sources */,
 				158915D3263170AE00EA0889 /* AppDelegate.swift in Sources */,
 				158915D5263170AE00EA0889 /* SceneDelegate.swift in Sources */,
