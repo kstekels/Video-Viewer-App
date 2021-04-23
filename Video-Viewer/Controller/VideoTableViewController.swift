@@ -30,6 +30,7 @@ class VideoTableViewController: UITableViewController {
     }
     
     @objc func refreshTableVIew() {
+        thumbImage = []
         tableView.reloadData()
         refreshControl?.endRefreshing()
     }
@@ -42,7 +43,6 @@ class VideoTableViewController: UITableViewController {
         var cell = UITableViewCell()
         if let videoCell = tableView.dequeueReusableCell(withIdentifier: videoCellID, for: indexPath) as? VideoTableViewCell {
             let source = videoSource[indexPath.row]
-            
 
             if videoCell.imageView?.image != nil {
                 videoCell.spinner.stopAnimating()
@@ -56,17 +56,26 @@ class VideoTableViewController: UITableViewController {
                 if let imageURL = URL(string: (self?.videoSource[indexPath.row].thumbnail)!) {
                     if let imgData = try? Data(contentsOf: imageURL) {
                         DispatchQueue.main.async {
+
                             videoCell.thumbnailImageView.image = UIImage(data: imgData)?.resizedImage(with: CGSize(width: 80.0, height: 80.0))
+                            videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                            videoCell.thumbnailImageView.alpha = 0.5
+                            
+                            UIView.animate(withDuration: 0.8, delay: 0.35, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: [], animations: {
+                                videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 1, y: 1)
+                                videoCell.thumbnailImageView.alpha = 1
+                                
+                            })
+                            
                             self?.thumbImage.append(UIImage(data: imgData))
                         }
-                        
                     }
                 }
             }
-
+            
             videoCell.labelText.text = source.name
             videoCell.thumbnailImageView.layer.cornerRadius = 10
-            
+                        
             cell = videoCell
         }
         

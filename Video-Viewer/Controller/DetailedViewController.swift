@@ -25,7 +25,11 @@ class DetailedViewController: UIViewController {
         detailedTextLabel.text = txt
         detailedTextDescription.text = dscr
         detailedImageView.image = img
+        detailedImageView.alpha = 0.5
+        detailedImageView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         detailedImageView.layer.cornerRadius = 10
+        
+        animateImage()
 
     }
 
@@ -34,7 +38,15 @@ class DetailedViewController: UIViewController {
         let player = AVPlayer(url: url)
         let controller = AVPlayerViewController()
         controller.player = player
-        present(controller, animated: true, completion: nil)
-        player.play()
+        present(controller, animated: true) {
+            controller.player?.play()
+        }
+    }
+    
+    func animateImage() {
+        UIView.animate(withDuration: 1.5, delay: 0.35, usingSpringWithDamping: 0.3, initialSpringVelocity: 5, options: [], animations: {
+            self.detailedImageView.transform = CGAffineTransform(scaleX: 1, y: 1)
+            self.detailedImageView.alpha = 1
+        })
     }
 }
