@@ -13,9 +13,9 @@ class VideoTableViewController: UITableViewController {
     private let videoCellID = "VideoCell"
     private let detailedViewStoryboardID = "DetailedView"
     private let urlString = "https://iphonephotographyschool.com/test-api/videos"
-    private var thumbImage: [UIImage?] = [UIImage?]()
     private var videoSource = [Video]()
     private var picturesPathExists = Bool()
+    private var imageDataArray: [Data] = []
 
     
     
@@ -45,7 +45,7 @@ extension VideoTableViewController {
     
     //numberOfRowsInSection
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return videoSource.count
+        return imageDataArray.count
     }
     
     // cellForRowAt
@@ -61,31 +61,17 @@ extension VideoTableViewController {
                 videoCell.spinner.startAnimating()
             }
             
+
             videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
             videoCell.thumbnailImageView.alpha = 0.5
 
-            if picturesPathExists {
-                print("Loading images from Local Directory")
-                DispatchQueue.main.async {
-                    videoCell.thumbnailImageView.image = self.getLocalImage(imageName: "\(indexPath.row).jpeg").resizedImage(with: CGSize(width: 50.0, height: 50.0))
-
-                }
-            } else if !picturesPathExists {
-                Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { (timer) in
-                    videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                    videoCell.thumbnailImageView.alpha = 0.5
-                    DispatchQueue.main.async {
-                        videoCell.thumbnailImageView.image = self.getLocalImage(imageName: "\(indexPath.row).jpeg").resizedImage(with: CGSize(width: 50.0, height: 50.0))
-
-                    }
-                    self.picturesPathExists = !self.picturesPathExists
-                    UIView.animate(withDuration: 0.8, delay: 0.35, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: [], animations: {
-                        videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 1, y: 1)
-                        videoCell.thumbnailImageView.alpha = 1
-
-                    })
-                }
+            
+            
+            DispatchQueue.main.async {
+                videoCell.thumbnailImageView.image = self.getLocalImage(imageName: "\(indexPath.row).jpeg").resizedImage(with: CGSize(width: 50.0, height: 50.0))
             }
+
+            
             
             UIView.animate(withDuration: 0.8, delay: 0.35, usingSpringWithDamping: 0.5, initialSpringVelocity: 5, options: [], animations: {
                 videoCell.thumbnailImageView.transform = CGAffineTransform(scaleX: 1, y: 1)
@@ -97,6 +83,7 @@ extension VideoTableViewController {
             videoCell.labelText.text = videoSource[indexPath.row].name
             videoCell.thumbnailImageView.layer.cornerRadius = 20
             cell = videoCell
+            
         }
         return cell
     }
@@ -122,7 +109,6 @@ extension VideoTableViewController {
 extension VideoTableViewController {
     
     @objc func refreshTableVIew() {
-        thumbImage = []
         tableView.reloadData()
         refreshControl?.endRefreshing()
     }
@@ -229,14 +215,36 @@ extension VideoTableViewController {
         for index in 0..<videoSource.count {
             if let thumbnailURL = URL(string: videoSource[index].thumbnail) {
                 if let imgData = try? Data(contentsOf: thumbnailURL) {
-                    let imageToSave = UIImage(data: imgData)
-                    DispatchQueue.global().async {
-                        self.saveImage(img: imageToSave, number: index)
+                        
+                    print(imageDataArray.count)
+                    
+                    if !imageDataArray.contains(imgData) {
+                        imageDataArray.append(imgData)
                     }
                 }
             }
             
         }
+        DispatchQueue.global().async {
+            self.createWithoutDuplicates()
+        }
+
+        
+    }
+    
+    // Create Images avoiding duplicates
+    private func createWithoutDuplicates() {
+        
+        for index in 0..<self.imageDataArray.count {
+            let imageToSave = UIImage(data: self.imageDataArray[index])
+            self.saveImage(img: imageToSave, number: index)
+
+        }
+        print("Count: \(imageDataArray.count)")
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+        
     }
     
     // Save image to Documents/Pictures/ *.jpeg
@@ -266,7 +274,7 @@ extension VideoTableViewController {
     // Read local image and return UIImage
     private func getLocalImage(imageName: String) -> UIImage {
         guard let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            return UIImage(systemName: "icloud.slash")!
+            return UIImage(systemName: "icloud.circle")!
         }
         let fileURL = filePath.appendingPathComponent("Pictures").appendingPathComponent(imageName)
         
@@ -276,9 +284,9 @@ extension VideoTableViewController {
                 return newImage
             }
         } catch {
-            print("Error reading image")
+            print("No Image to show")
         }
-        return UIImage(systemName: "icloud.slash")!
+        return UIImage(systemName: "icloud.circle")!
     }
     
     
