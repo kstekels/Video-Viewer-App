@@ -45,3 +45,10 @@ Design has to closely match the following screenshots and look good in both, lig
 Project should be stored in your own GitHub repository. Repository should contain commits representing different stages of progress.
 
 Make sure that all tests pass before submitting.
+
+## Result
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/31929901/116623269-aa061280-a94e-11eb-8265-6a45335d393a.gif)
+![ezgif com-gif-maker(1)](https://user-images.githubusercontent.com/31929901/116623297-b68a6b00-a94e-11eb-9c5e-27c76dc048d0.gif)
+![ezgif com-gif-maker(2)](https://user-images.githubusercontent.com/31929901/116623326-c1450000-a94e-11eb-8c01-5e615f2fd9f7.gif)
+![ezgif com-gif-maker(3)](https://user-images.githubusercontent.com/31929901/116623341-c6a24a80-a94e-11eb-98cf-410a1b343ad0.gif)
+![ezgif com-gif-maker(4)](https://user-images.githubusercontent.com/31929901/116623353-ca35d180-a94e-11eb-9512-92fd2df8652b.gif)
