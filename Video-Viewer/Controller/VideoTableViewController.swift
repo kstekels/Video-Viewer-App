@@ -10,77 +10,72 @@ import UIKit
 class VideoTableViewController: UITableViewController {
     
     //MARK: - Properties
-    private let videoCellID = "VideoCell"
-    private let detailedViewStoryboardID = "DetailedView"
-    private let urlString = "https://iphonephotographyschool.com/test-api/videos"
-    private var videoSource = [Video]()
-    private var picturesPathExists = Bool()
-    private var imageDataArray: [Data] = []
-    
-    private var progressCounter: Int = 0
-    private let childView = UIProgressView()
-    private let textLabelForLoad = UILabel()
-    private var percentageBar: Int = 0
-    
-    private var numberOfLocalPictures: Int = 0
-    
+    private let videoCellID                 = "VideoCell"
+    private let detailedViewStoryboardID    = "DetailedView"
+    private let urlString                   = "https://iphonephotographyschool.com/test-api/videos"
+    private var videoSource                 = [Video]()
+    private var picturesPathExists          = Bool()
+    private var imageDataArray: [Data]      = []
+    private var progressCounter: Int        = 0
+    private let progressBarItem             = UIProgressView()
+    private let activityIndicator           = UIActivityIndicatorView()
+    private var numberOfLocalPictures: Int  = 0
+    private var refressIsActive             = false
     
     
     
     //MARK: - Main
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        print(getDocumentDirectory())
         initialSetUp()
-        
-        // Count pictures in Local Directory
-        if let numOfPic = countPicturesInLocalDirectory() {
-            numberOfLocalPictures = numOfPic
-            print(numberOfLocalPictures)
-
-        }
-        
-
-        // Screen Parameters
-        let screenWidth = view.frame.size.width
-        let screenHeight = view.frame.size.height
-        print("Width: \(screenWidth), Height: \(screenHeight)")
-
-        
-        //MARK: - Testing Subview
-        self.view.addSubview(childView)
-        self.view.addSubview(textLabelForLoad)
-        
-        // Progress Bar
-        childView.isHidden = true
-        childView.frame = CGRect(x: screenWidth / 2 - 55, y: screenHeight / 2 - 100, width: 110, height: 100)
-        childView.backgroundColor = UIColor.systemGray
-        childView.progressViewStyle = .bar
-        childView.sizeToFit()
-        childView.alpha = 0.7
-        childView.progressTintColor = .systemBlue
-        
-        // Label
-        textLabelForLoad.frame = CGRect(x: screenWidth / 2 - 110, y: screenHeight / 2 - 200, width: 220, height: 100)
-        textLabelForLoad.isHidden = false
-        textLabelForLoad.numberOfLines = 0
-        textLabelForLoad.textAlignment = .center
-        textLabelForLoad.font = .systemFont(ofSize: 30)
-        // -----------------------
-        
-        
-        
-        
-        //MARK: - test
+        countPictures()
+        loadContent()
+    }
+    
+    // Switch between local and remote
+    private func loadContent() {
         if picturesPathExists {
             print("--------- Local ---------")
             readLocalJson()
         }else {
             print("--------- Remote ---------")
             getData(for: urlString)
+            addSubviewOnTop()
         }
-
-        print(getDocumentDirectory())
+    }
+    
+    // Count Pictures In Documents/Pictures
+    private func countPictures() {
+        if let numOfPic = countPicturesInLocalDirectory() {
+            numberOfLocalPictures = numOfPic
+            print(numberOfLocalPictures)
+        }
+    }
+    
+    // Add Progress bar and Activity indicator
+    private func addSubviewOnTop() {
+        
+        // Screen Parameters
+        let screenWidth = view.frame.size.width
+        let screenHeight = view.frame.size.height
+        print("Width: \(screenWidth), Height: \(screenHeight)")
+        //MARK: - Progress bar
+        self.view.addSubview(progressBarItem)
+        progressBarItem.isHidden = true
+        progressBarItem.backgroundColor = UIColor.systemGray
+        progressBarItem.progressViewStyle = .bar
+        progressBarItem.sizeToFit()
+        progressBarItem.alpha = 0.7
+        progressBarItem.progressTintColor = .systemBlue
+        progressBarItem.transform = CGAffineTransform(scaleX: 1, y: 4)
+        self.navigationItem.titleView = progressBarItem
+        
+        self.view.addSubview(activityIndicator)
+        activityIndicator.isHidden = true
+        activityIndicator.frame = CGRect(x: screenWidth / 2 - 25, y: screenHeight / 2 - 150, width: 50, height: 50)
+        activityIndicator.color = .systemGray2
+        activityIndicator.style = .large
     }
     
     
@@ -89,10 +84,8 @@ class VideoTableViewController: UITableViewController {
 //MARK: - Table View
 extension VideoTableViewController {
     
-    //numberOfRowsInSection
+    // numberOfRowsInSection
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return imageDataArray.count
-//        return 5
         if numberOfLocalPictures > 0 {
             return numberOfLocalPictures
         } else {
@@ -148,6 +141,7 @@ extension VideoTableViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
         guard let vc = storyboard.instantiateViewController(identifier: detailedViewStoryboardID) as? DetailedViewController else { return }
         print(indexPath)
+        
         vc.txt = videoSource[indexPath.row].name
         vc.dscr = videoSource[indexPath.row].description
         vc.img = getLocalImage(imageName: "\(indexPath.row).jpeg")
@@ -162,12 +156,18 @@ extension VideoTableViewController {
 //MARK: - Methodes - Working With Internet URL
 extension VideoTableViewController {
     
+    //MARK: - Refresh swipe
     @objc func refreshTableVIew() {
-        tableView.reloadData()
-        refreshControl?.endRefreshing()
+        refressIsActive = true
+        numberOfLocalPictures = 0
+        imageDataArray = []
+        self.title = ""
+        progressBarItem.removeFromSuperview()
+        activityIndicator.removeFromSuperview()
+        getData(for: urlString)
     }
     
-    // Initial Set-up parameters
+    //MARK: - Initial set-Up
     private func initialSetUp() {
         self.tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         self.navigationController?.navigationBar.prefersLargeTitles = true
@@ -180,10 +180,6 @@ extension VideoTableViewController {
         
         // Check, if Pictures Folder exist
         picturesPathExists = getDocumentDirectory().appendingPathComponent("Pictures").hasDirectoryPath
-
-        
-
-        
     }
     
     // Get Data from URl request
@@ -225,12 +221,10 @@ extension VideoTableViewController {
         }
     }
     
-    
 }
 
 
 //MARK: - Methodes - Working with Local files
-
 extension VideoTableViewController {
     
     // Document Directory path
@@ -286,12 +280,20 @@ extension VideoTableViewController {
     
     // Create .jpeg Images from thumbnail links
     private func createImageFromJson() {
-        if numberOfLocalPictures > 0 {
-            return
+        
+        // Check for refresh swipe
+        if !refressIsActive {
+            refressIsActive = false
+            
+            // check, if pictures are in local directory
+            if numberOfLocalPictures > 0 {
+                return
+            }
         }
         
+        // When loading images to memory
         DispatchQueue.main.async {
-            self.title = "Loading..."
+            self.title = ""
         }
         
         for index in 0..<videoSource.count {
@@ -310,44 +312,24 @@ extension VideoTableViewController {
             }
 
             
-            //MARK: - ChildView
+            //MARK: - ChildView Animation
             DispatchQueue.main.async {
                 
-                if self.textLabelForLoad.text == "100 %" {
-                    print("Done")
-                    print("Image data array count (End)-> \(self.imageDataArray.count)")
 
-                } else {
-                    self.childView.progress = Float(self.progressCounter) / 10
-                    self.textLabelForLoad.alpha = 0.5
-                    self.textLabelForLoad.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-                    
-                    
-                    
-                    UIProgressView.animate(withDuration: 1, delay: 0.2, usingSpringWithDamping: 0.9, initialSpringVelocity: 5, options: [], animations: {
-                        self.textLabelForLoad.text = "\(self.percentageBar) %"
-                        self.textLabelForLoad.transform = CGAffineTransform(scaleX: 1, y: 1)
-                        self.textLabelForLoad.alpha = 1
-                    })
-                    
-                    if self.childView.isHidden {
-                        self.childView.transform = CGAffineTransform(scaleX: 0.4, y: 0.4)
-                        self.childView.isHidden = false
+                self.progressBarItem.progress = Float(self.progressCounter) / 10
+                    if self.progressBarItem.isHidden {
+                        self.progressBarItem.transform = CGAffineTransform(scaleX: 0.4, y: 0.4)
+                        self.progressBarItem.isHidden = false
+                        self.activityIndicator.isHidden = false
+                        self.activityIndicator.startAnimating()
                         
                         UIProgressView.animate(withDuration: 1.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 5, options: [], animations: {
-                            if !self.childView.isHidden {
-                                self.childView.transform = CGAffineTransform(scaleX: 1, y: 1)
+                            if !self.progressBarItem.isHidden {
+                                self.progressBarItem.transform = CGAffineTransform(scaleX: 1, y: 1)
                             }
                         })
-                        
-
                     }
-                    
-                    print("Progress : \(self.childView.progress)")
-  
-                    self.percentageBar = Int(self.childView.progress * 100)
-                }
-
+                    print("Progress : \(self.progressBarItem.progress)")
             }
             
         }
@@ -368,12 +350,14 @@ extension VideoTableViewController {
         print("Count: \(imageDataArray.count)")
         DispatchQueue.main.async {
             // Subview hidden
-            self.childView.isHidden = true
-            self.textLabelForLoad.isHidden = true
+            self.progressBarItem.removeFromSuperview()
+            self.activityIndicator.removeFromSuperview()
             self.title = "Videos"
             
             self.progressCounter = 0
             self.tableView.reloadData()
+            self.refreshControl?.endRefreshing()
+
         }
         
     }
@@ -419,6 +403,5 @@ extension VideoTableViewController {
         }
         return UIImage(systemName: "icloud.circle")!
     }
-    
     
 }

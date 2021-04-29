@@ -14,34 +14,30 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
     @IBOutlet var detailedImageView: UIImageView!
     @IBOutlet var detailedTextDescription: UITextView!
     
-    private let streamID = "videoStream"
-    
+    private let streamID    = "videoStream2"
     
     var img: UIImage?
-    var txt: String = ""
-    var dscr: String = ""
-    var videoURL: String = ""
-    
+    var txt: String         = ""
+    var dscr: String        = ""
+    var videoURL: String    = ""
+        
     override func viewDidLoad() {
         
         super.viewDidLoad()
         initialSetUp()
-        
-        let availableOffline = checkIfOfflineVideoAccessible()
-        
-        if !availableOffline {
-            let downloadButton = UIBarButtonItem(image: UIImage(systemName: "icloud.and.arrow.down"), style: UIBarButtonItem.Style.done, target: self, action: #selector(downloadButtonTapped))
-            navigationItem.rightBarButtonItem = downloadButton
-        }
-        
-
-        
+        createDownlaodButton()
         animateImage()
         
     }
     
-    
-    
+    // Create Downlaod button
+    private func createDownlaodButton() {
+        let availableOffline = checkIfOfflineVideoAccessible()
+        if !availableOffline {
+            let downloadButton = UIBarButtonItem(image: UIImage(systemName: "icloud.and.arrow.down"), style: UIBarButtonItem.Style.done, target: self, action: #selector(downloadButtonTapped))
+            navigationItem.rightBarButtonItem = downloadButton
+        }
+    }
     
     //MARK: - Downlaod video
     @objc func downloadButtonTapped() {
@@ -62,7 +58,7 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        
+
         ac.addAction(downloadAction)
         ac.addAction(cancelAction)
         
@@ -71,7 +67,7 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
 
     
     
-    
+    //MARK: - URL session
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didLoad timeRange: CMTimeRange, totalTimeRangesLoaded loadedTimeRanges: [NSValue], timeRangeExpectedToLoad: CMTimeRange) {
         var percentComplete = 0.0
         for value in loadedTimeRanges {
@@ -80,16 +76,23 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
         }
         percentComplete *= 100
         print("percent complete: \(percentComplete)")
+
         DispatchQueue.main.async {
             self.title = "Downloaded: \(Int(percentComplete.rounded())) %"
         }
         
+        
     }
     
-    
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        print("Download Completed!")
-        self.title = "Saved!"
+        
+        if error != nil {
+            print("Download Completed!")
+            self.title = "Saved!"
+        } else {
+            print("urlSession didCompleteWithError \(String(describing: error))")
+        }
+        
     }
     
     func urlSession(_ session: URLSession, assetDownloadTask: AVAssetDownloadTask, didFinishDownloadingTo location: URL) {
@@ -99,7 +102,7 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
     }
     
     
-    
+    // Play button Action
     @IBAction func playButtonTappped(_ sender: UIButton) {
         
         let offlineVideoCheck = checkIfOfflineVideoAccessible()
@@ -152,9 +155,11 @@ class DetailedViewController: UIViewController, AVAssetDownloadDelegate {
 }
 
 extension DetailedViewController {
-    
+    //MARK: - Set-Up
     private func initialSetUp() {
+        // Navigation bar
         self.navigationItem.rightBarButtonItem?.isEnabled = true
+        
         // Text
         detailedTextLabel.text = txt
         detailedTextLabel.font = .systemFont(ofSize: 28, weight: .bold)
@@ -165,8 +170,11 @@ extension DetailedViewController {
         detailedImageView.alpha = 0.5
         detailedImageView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         detailedImageView.layer.cornerRadius = 10
+        
+        
     }
     
+    // Image Animation
     private func animateImage() {
         UIView.animate(withDuration: 1.5, delay: 0.35, usingSpringWithDamping: 0.3, initialSpringVelocity: 5, options: [], animations: {
             self.detailedImageView.transform = CGAffineTransform(scaleX: 1, y: 1)
@@ -193,27 +201,5 @@ extension DetailedViewController {
         }
         return false
     }
-    
-//    public func restorePendingDownloads() {
-//
-//        let configuration = URLSessionConfiguration.background(withIdentifier: streamID)
-//
-//        let downlaodSession = AVAssetDownloadURLSession(configuration: configuration,
-//                                                        assetDownloadDelegate: self,
-//                                                        delegateQueue: OperationQueue.main)
-//
-//        downlaodSession.getAllTasks { tasksArray in
-//
-//            for task in tasksArray {
-//                guard let downloadTask = task as? AVAssetDownloadTask else {
-//                    break
-//                }
-//
-//                let asset = downloadTask.urlAsset
-//            }
-//
-//        }
-//
-//    }
     
 }
