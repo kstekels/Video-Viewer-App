@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AVKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,6 +15,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+//        let configuration = URLSessionConfiguration.background(withIdentifier: "videoStream")
+//        let session = URLSession(configuration: configuration)
+//        session.getAllTasks { tasks in
+//            for task in tasks {
+//                if let assetDownlaodTask = task as? AVAssetDownloadTask {
+//                    print(assetDownlaodTask.cancel())
+//                }
+//            }
+//        }
+        
+        
         return true
     }
 

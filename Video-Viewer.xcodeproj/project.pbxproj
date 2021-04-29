@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		154EAFB526384DA500FD9CC9 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154EAFB426384DA500FD9CC9 /* FileManagerExtension.swift */; };
 		158915D3263170AE00EA0889 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158915D2263170AE00EA0889 /* AppDelegate.swift */; };
 		158915D5263170AE00EA0889 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158915D4263170AE00EA0889 /* SceneDelegate.swift */; };
 		158915DA263170AE00EA0889 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 158915D8263170AE00EA0889 /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		154EAFB426384DA500FD9CC9 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		158915CF263170AE00EA0889 /* Video-Viewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Video-Viewer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		158915D2263170AE00EA0889 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		158915D4263170AE00EA0889 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -80,6 +82,7 @@
 				158915D4263170AE00EA0889 /* SceneDelegate.swift */,
 				158915ED2631710400EA0889 /* Videos.swift */,
 				158915F926317DE100EA0889 /* UIImage.swift */,
+				154EAFB426384DA500FD9CC9 /* FileManagerExtension.swift */,
 			);
 			path = Supporting;
 			sourceTree = "<group>";
@@ -178,6 +181,7 @@
 				158915D3263170AE00EA0889 /* AppDelegate.swift in Sources */,
 				158915D5263170AE00EA0889 /* SceneDelegate.swift in Sources */,
 				158915FA26317DE100EA0889 /* UIImage.swift in Sources */,
+				154EAFB526384DA500FD9CC9 /* FileManagerExtension.swift in Sources */,
 				158915F22631719600EA0889 /* VideoTableViewController.swift in Sources */,
 				158915F5263171AC00EA0889 /* VideoTableViewCell.swift in Sources */,
 			);
