@@ -16,24 +16,70 @@ class VideoTableViewController: UITableViewController {
     private var videoSource = [Video]()
     private var picturesPathExists = Bool()
     private var imageDataArray: [Data] = []
-
+    
+    private var progressCounter: Int = 0
+    private let childView = UIProgressView()
+    private let textLabelForLoad = UILabel()
+    private var percentageBar: Int = 0
+    
+    private var numberOfLocalPictures: Int = 0
+    
+    
     
     
     //MARK: - Main
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        picturesPathExists = getDocumentDirectory().appendingPathComponent("Pictures").hasDirectoryPath
-        
         initialSetUp()
+        
+        // Count pictures in Local Directory
+        if let numOfPic = countPicturesInLocalDirectory() {
+            numberOfLocalPictures = numOfPic
+            print(numberOfLocalPictures)
+
+        }
+        
+
+        // Screen Parameters
+        let screenWidth = view.frame.size.width
+        let screenHeight = view.frame.size.height
+        print("Width: \(screenWidth), Height: \(screenHeight)")
+
+        
+        //MARK: - Testing Subview
+        self.view.addSubview(childView)
+        self.view.addSubview(textLabelForLoad)
+        
+        // Progress Bar
+        childView.isHidden = true
+        childView.frame = CGRect(x: screenWidth / 2 - 55, y: screenHeight / 2 - 100, width: 110, height: 100)
+        childView.backgroundColor = UIColor.systemGray
+        childView.progressViewStyle = .bar
+        childView.sizeToFit()
+        childView.alpha = 0.7
+        childView.progressTintColor = .systemBlue
+        
+        // Label
+        textLabelForLoad.frame = CGRect(x: screenWidth / 2 - 110, y: screenHeight / 2 - 200, width: 220, height: 100)
+        textLabelForLoad.isHidden = false
+        textLabelForLoad.numberOfLines = 0
+        textLabelForLoad.textAlignment = .center
+        textLabelForLoad.font = .systemFont(ofSize: 30)
+        // -----------------------
+        
+        
+        
         
         //MARK: - test
         if picturesPathExists {
+            print("--------- Local ---------")
             readLocalJson()
-        } else {
+        }else {
+            print("--------- Remote ---------")
             getData(for: urlString)
         }
-        
+
         print(getDocumentDirectory())
     }
     
@@ -45,7 +91,14 @@ extension VideoTableViewController {
     
     //numberOfRowsInSection
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return imageDataArray.count
+//        return imageDataArray.count
+//        return 5
+        if numberOfLocalPictures > 0 {
+            return numberOfLocalPictures
+        } else {
+            return imageDataArray.count
+        }
+        
     }
     
     // cellForRowAt
@@ -69,6 +122,7 @@ extension VideoTableViewController {
             
             DispatchQueue.main.async {
                 videoCell.thumbnailImageView.image = self.getLocalImage(imageName: "\(indexPath.row).jpeg").resizedImage(with: CGSize(width: 50.0, height: 50.0))
+                self.title = "Videos"
             }
 
             
@@ -117,12 +171,18 @@ extension VideoTableViewController {
     private func initialSetUp() {
         self.tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
         self.navigationController?.navigationBar.prefersLargeTitles = true
-        self.title = "Videos"
+        self.title = ""
         
         // Tablview swipe down - refresh
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshTableVIew), for: .valueChanged)
         self.refreshControl = refreshControl
+        
+        // Check, if Pictures Folder exist
+        picturesPathExists = getDocumentDirectory().appendingPathComponent("Pictures").hasDirectoryPath
+
+        
+
         
     }
     
@@ -152,11 +212,11 @@ extension VideoTableViewController {
         if let jsonData = try? JSONDecoder().decode(Videos.self, from: json) {
             videoSource = jsonData.videos
             
-            // Create Img
+            //Create picture
             DispatchQueue.global().async {
                 self.createImageFromJson()
             }
-            
+
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -177,6 +237,20 @@ extension VideoTableViewController {
     private func getDocumentDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
+    }
+    
+    // Pictures Directory path (Count pictures)
+    private func countPicturesInLocalDirectory() -> Int? {
+        let fileManager = FileManager.default
+        let documentPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        let picturesPath = documentPath + "/Pictures"
+        let dirContents = try? fileManager.contentsOfDirectory(atPath: picturesPath)
+        let count = dirContents?.count
+        print("Pictures in Local directory = \(count ?? 0 - 1)")
+        guard let numOfPicture = count else {
+            return 0
+        }
+        return numOfPicture - 1
     }
     
     //MARK: - Create File/Directory
@@ -212,16 +286,68 @@ extension VideoTableViewController {
     
     // Create .jpeg Images from thumbnail links
     private func createImageFromJson() {
+        if numberOfLocalPictures > 0 {
+            return
+        }
+        
+        DispatchQueue.main.async {
+            self.title = "Loading..."
+        }
+        
         for index in 0..<videoSource.count {
             if let thumbnailURL = URL(string: videoSource[index].thumbnail) {
                 if let imgData = try? Data(contentsOf: thumbnailURL) {
                         
-                    print(imageDataArray.count)
+                    print("Image data array count (Start)-> \(imageDataArray.count)")
                     
                     if !imageDataArray.contains(imgData) {
                         imageDataArray.append(imgData)
+                        progressCounter += 1
                     }
+
                 }
+
+            }
+
+            
+            //MARK: - ChildView
+            DispatchQueue.main.async {
+                
+                if self.textLabelForLoad.text == "100 %" {
+                    print("Done")
+                    print("Image data array count (End)-> \(self.imageDataArray.count)")
+
+                } else {
+                    self.childView.progress = Float(self.progressCounter) / 10
+                    self.textLabelForLoad.alpha = 0.5
+                    self.textLabelForLoad.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+                    
+                    
+                    
+                    UIProgressView.animate(withDuration: 1, delay: 0.2, usingSpringWithDamping: 0.9, initialSpringVelocity: 5, options: [], animations: {
+                        self.textLabelForLoad.text = "\(self.percentageBar) %"
+                        self.textLabelForLoad.transform = CGAffineTransform(scaleX: 1, y: 1)
+                        self.textLabelForLoad.alpha = 1
+                    })
+                    
+                    if self.childView.isHidden {
+                        self.childView.transform = CGAffineTransform(scaleX: 0.4, y: 0.4)
+                        self.childView.isHidden = false
+                        
+                        UIProgressView.animate(withDuration: 1.5, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 5, options: [], animations: {
+                            if !self.childView.isHidden {
+                                self.childView.transform = CGAffineTransform(scaleX: 1, y: 1)
+                            }
+                        })
+                        
+
+                    }
+                    
+                    print("Progress : \(self.childView.progress)")
+  
+                    self.percentageBar = Int(self.childView.progress * 100)
+                }
+
             }
             
         }
@@ -238,10 +364,15 @@ extension VideoTableViewController {
         for index in 0..<self.imageDataArray.count {
             let imageToSave = UIImage(data: self.imageDataArray[index])
             self.saveImage(img: imageToSave, number: index)
-
         }
         print("Count: \(imageDataArray.count)")
         DispatchQueue.main.async {
+            // Subview hidden
+            self.childView.isHidden = true
+            self.textLabelForLoad.isHidden = true
+            self.title = "Videos"
+            
+            self.progressCounter = 0
             self.tableView.reloadData()
         }
         
@@ -250,7 +381,7 @@ extension VideoTableViewController {
     // Save image to Documents/Pictures/ *.jpeg
     private func saveImage(img: UIImage?, number: Int) {
         if let image = img {
-            if let data = image.jpegData(compressionQuality: 0.0) {
+            if let data = image.jpegData(compressionQuality: 0.4) {
                 createDirectory(withFolderName: "Pictures")
                 let filename = getDocumentDirectory().appendingPathComponent("Pictures").appendingPathComponent("\(number).jpeg")
                 try? data.write(to: filename)
